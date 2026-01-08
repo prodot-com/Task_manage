@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema, registerSchema } from "../validation/authSchema";
+import api from "../lib/api";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../store/authSlice";
 import {
   CheckCircle,
   ShieldCheck,
@@ -37,6 +43,20 @@ const App = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  //   const onSubmit = async (data: any) => {
+  //   try {
+  //     const endpoint = isLogin ? "/auth/login" : "/auth/register";
+  //     const res = await api.post(endpoint, data);
+
+  //     if (res.data.token) {
+  //       dispatch(loginSuccess(res.data.token));
+  //       onclose();
+  //     }
+  //   } catch (err: any) {
+  //     alert(err.response?.data?.message || "Auth failed");
+  //   }
+  // };
+
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-100 font-sans selection:bg-zinc-500/30 selection:text-zinc-200 relative overflow-x-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
@@ -46,9 +66,7 @@ const App = () => {
 
       <nav
         className={`fixed top-0 w-full z-50 transition-all duration-500 ${
-          scrolled
-            ? "bg-black/80 backdrop-blur-md border-b border-zinc-800 py-4"
-            : "bg-transparent py-4"
+          scrolled ? "bg-black/80 backdrop-blur-md py-4" : "bg-transparent py-4"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
@@ -146,7 +164,7 @@ const App = () => {
   );
 };
 
-const HeroSection = ({ onStart } :any) => (
+const HeroSection = ({ onStart }: any) => (
   <section className="pt-48 pb-20 px-6 text-center">
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -194,106 +212,109 @@ const HeroSection = ({ onStart } :any) => (
 
 const AuthModal = ({ type, onClose, setView }: any) => {
   const isLogin = type === VIEW_STATES.LOGIN;
+  const dispatch = useDispatch();
+  const schema = isLogin ? loginSchema : registerSchema;
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(schema),
+  });
+
+  const onSubmit = async (data: any) => {
+    const endpoint = isLogin ? "/auth/login" : "/auth/register";
+    const res = await api.post(endpoint, data);
+    if (res.data.token) {
+      dispatch(loginSuccess(res.data.token));
+      onClose();
+    }
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] bg-black flex items-center justify-center lg:p-4"
-    >
-      <div className="w-full max-w-[1000px] h-full lg:h-[680px] bg-[#09090b] flex flex-col lg:flex-row overflow-hidden lg:rounded-xl lg:border lg:border-zinc-800 shadow-2xl relative">
-        <button
-          onClick={onClose}
-          className="absolute top-6 left-6 z-50 p-2 text-zinc-500 hover:text-white transition-colors"
-        >
-          <X className="w-6 h-6" />
+    <motion.div className="fixed inset-0 bg-black flex items-center justify-center">
+      <div className="w-full max-w-md bg-[#09090b] p-8 rounded-xl border border-zinc-800 relative">
+        <button onClick={onClose} className="absolute top-4 left-4">
+          <X />
         </button>
 
-        <div className="flex-1 flex flex-col justify-center px-8 sm:px-16 lg:px-20 py-12">
-          <div className="mb-10 text-center">
-            <h2 className="text-2xl font-semibold text-white tracking-tight">
-              {isLogin ? "Welcome back" : "Create an account"}
-            </h2>
-            <p className="text-zinc-500 text-sm mt-2">
-              Login to your Nexus account to manage tasks.
-            </p>
-          </div>
+        <h2 className="text-2xl font-semibold text-center mb-6">
+          {isLogin ? "Login" : "Register"}
+        </h2>
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-            {!isLogin && (
-              <InputField
-                label="Full Name"
-                placeholder="Jane Doe"
-                type="text"
-              />
-            )}
-            <InputField
-              label="Email"
-              placeholder="m@example.com"
-              type="email"
+        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-white px-1">
+              Username
+            </label>
+            <input
+              type="text"
+              placeholder="Jane Doe"
+              {...register("userName")}
+              className="w-full px-3 py-2 bg-[#0c0c0d] border border-zinc-800 rounded-md"
             />
-            <div className="space-y-2">
-              <div className="flex justify-between items-center px-1">
-                <label className="text-sm font-medium text-white">
-                  Password
-                </label>
-                {isLogin && (
-                  <button className="text-xs text-zinc-500 hover:text-white underline underline-offset-4">
-                    Forgot password?
-                  </button>
-                )}
-              </div>
-              <input
-                type="password"
-                placeholder="••••••••"
-                className="w-full px-3 py-2 bg-[#0c0c0d] border border-zinc-800 rounded-md focus:ring-1 focus:ring-zinc-400 text-white outline-none transition-all"
-              />
-            </div>
-            <button className="w-full py-2 bg-zinc-100 hover:bg-white text-black font-semibold rounded-md transition-colors mt-2">
-              {isLogin ? "Login" : "Register"}
-            </button>
-          </form>
-
-          <div className="mt-8">
-            <div className="relative mb-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-zinc-800"></span>
-              </div>
-              <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-                <span className="bg-[#09090b] px-2 text-zinc-600">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <SocialBtn icon={<Github size={18} />} />
-              <SocialBtn icon={<Globe size={18} />} />
-              <SocialBtn icon={<Code size={18} />} />
-            </div>
+            {errors.userName && (
+              <p className="text-red-500 text-xs">
+                {errors.userName.message as string}
+              </p>
+            )}
           </div>
 
-          <p className="mt-8 text-center text-sm text-zinc-500">
-            {isLogin ? "Don't have an account?" : "Already have an account?"}
-            <button
-              onClick={() =>
-                setView(isLogin ? VIEW_STATES.REGISTER : VIEW_STATES.LOGIN)
-              }
-              className="ml-2 text-zinc-300 hover:text-white underline underline-offset-4"
-            >
-              {isLogin ? "Sign up" : "Sign in"}
-            </button>
-          </p>
-        </div>
+          {/* EMAIL */}
+          {/* <div className="space-y-2">
+            <label className="text-sm font-medium text-white px-1">
+              Username
+            </label>
+            <input
+              type="email"
+              placeholder="m@example.com"
+              {...register("email")}
+              className="w-full px-3 py-2 bg-[#0c0c0d] border border-zinc-800 rounded-md"
+            />
+            {errors.email && (
+              <p className="text-red-500 text-xs">
+                {errors.email.message as string}
+              </p>
+            )}
+          </div> */}
 
-        <div className="hidden lg:flex flex-1 bg-zinc-900/30 border-l border-zinc-800 items-center justify-center relative">
-          <div className="w-72 h-72 border border-zinc-800 rounded-full flex items-center justify-center relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-zinc-500/10 to-transparent" />
-            <div className="absolute w-[200%] h-[1px] bg-zinc-800 rotate-45" />
-            <div className="absolute w-[200%] h-[1px] bg-zinc-800 -rotate-45" />
-            <Layout className="w-16 h-16 text-zinc-800 group-hover:text-zinc-600 transition-colors duration-500 relative z-10" />
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-white px-1">
+              Password
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              {...register("password")}
+              className="w-full px-3 py-2 bg-[#0c0c0d] border border-zinc-800 rounded-md"
+            />
+            {errors.password && (
+              <p className="text-red-500 text-xs">
+                {errors.password.message as string}
+              </p>
+            )}
           </div>
-        </div>
+
+          <button
+            type="submit"
+            className="w-full py-2 bg-zinc-100 hover:bg-white text-black font-semibold rounded-md"
+          >
+            {isLogin ? "Login" : "Register"}
+          </button>
+        </form>
+
+        <p className="text-center text-sm mt-6">
+          {isLogin ? "No account?" : "Already have an account?"}
+          <button
+            onClick={() =>
+              setView(isLogin ? VIEW_STATES.REGISTER : VIEW_STATES.LOGIN)
+            }
+            className="ml-2 underline"
+          >
+            {isLogin ? "Register" : "Login"}
+          </button>
+        </p>
       </div>
     </motion.div>
   );
