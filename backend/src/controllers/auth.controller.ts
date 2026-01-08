@@ -88,6 +88,7 @@ const isValidEmail = (email: string) => /^\S+@\S+\.\S+$/.test(email);
 export const registerUser = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
+    console.log(name, email, password)
 
     // 1. Basic validation
     if (!name || !email || !password) {
@@ -133,7 +134,7 @@ export const registerUser = async (req: Request, res: Response) => {
       secret,
       { expiresIn: "1h" }
     );
-
+    console.log("Registration success")
     return res.status(201).json(
       new ApiResponse(201, { token, user: { id: user.id, name: user.name, email: user.email } }, "Registration successful")
     );
@@ -147,6 +148,7 @@ export const registerUser = async (req: Request, res: Response) => {
 export const loginUser = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
+    console.log(email, password)
 
     // 1. Basic validation
     if (!email || !password) {
@@ -181,6 +183,8 @@ export const loginUser = async (req: Request, res: Response) => {
       secret,
       { expiresIn: "1h" }
     );
+
+    console.log("Login success")
 
     return res.status(200).json(
       new ApiResponse(200, { token, user: { id: user.id, name: user.name, email: user.email } }, "Login successful")

@@ -6,6 +6,7 @@ import { loginSchema, registerSchema } from "../validation/authSchema";
 import api from "../lib/api";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../store/authSlice";
+import { useNavigate } from "react-router-dom";
 import {
   CheckCircle,
   ShieldCheck,
@@ -36,6 +37,7 @@ const VIEW_STATES = {
 const App = () => {
   const [view, setView] = useState(VIEW_STATES.LANDING);
   const [scrolled, setScrolled] = useState(false);
+
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -212,6 +214,7 @@ const HeroSection = ({ onStart }: any) => (
 
 const AuthModal = ({ type, onClose, setView }: any) => {
   const isLogin = type === VIEW_STATES.LOGIN;
+  const navigate = useNavigate()
   const dispatch = useDispatch();
   const schema = isLogin ? loginSchema : registerSchema;
 
@@ -219,16 +222,20 @@ const AuthModal = ({ type, onClose, setView }: any) => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<any>({
     resolver: zodResolver(schema),
   });
 
   const onSubmit = async (data: any) => {
-    const endpoint = isLogin ? "/auth/login" : "/auth/register";
-    const res = await api.post(endpoint, data);
-    if (res.data.token) {
-      dispatch(loginSuccess(res.data.token));
+    try {
+      const endpoint = isLogin ? "/auth/login" : "/auth/register";
+      const res = await api.post(endpoint, data);
+
+      dispatch(loginSuccess(res.data.data.token));
       onClose();
+      navigate("/dashboard");
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Auth failed");
     }
   };
 
@@ -244,31 +251,30 @@ const AuthModal = ({ type, onClose, setView }: any) => {
         </h2>
 
         <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-white px-1">
-              Username
-            </label>
-            <input
-              type="text"
-              placeholder="Jane Doe"
-              {...register("userName")}
-              className="w-full px-3 py-2 bg-[#0c0c0d] border border-zinc-800 rounded-md"
-            />
-            {errors.userName && (
-              <p className="text-red-500 text-xs">
-                {errors.userName.message as string}
-              </p>
-            )}
-          </div>
+          {!isLogin && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-white px-1">
+                Name
+              </label>
+              <input
+                type="text"
+                placeholder="Probal Ghosh"
+                {...register("name")}
+                className="w-full px-3 py-2 bg-[#0c0c0d] border border-zinc-800 rounded-md"
+              />
+              {errors.name && (
+                <p className="text-red-500 text-xs">
+                  {errors.name.message as string}
+                </p>
+              )}
+            </div>
+          )}
 
-          {/* EMAIL */}
-          {/* <div className="space-y-2">
-            <label className="text-sm font-medium text-white px-1">
-              Username
-            </label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-white px-1">Email</label>
             <input
               type="email"
-              placeholder="m@example.com"
+              placeholder="probal@test.com"
               {...register("email")}
               className="w-full px-3 py-2 bg-[#0c0c0d] border border-zinc-800 rounded-md"
             />
@@ -277,7 +283,7 @@ const AuthModal = ({ type, onClose, setView }: any) => {
                 {errors.email.message as string}
               </p>
             )}
-          </div> */}
+          </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-white px-1">

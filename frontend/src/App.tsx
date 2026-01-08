@@ -1,14 +1,24 @@
-import { useState } from 'react'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoutes";
+import Dashboard from "./components/Dashboard";
 import LandingPage from './components/Landing'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <div>
-      <LandingPage/>
-    </div>
-  )
+    // <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    // </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
