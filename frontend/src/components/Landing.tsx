@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,7 +54,7 @@ const App = () => {
             className="flex items-center gap-2.5 cursor-pointer group"
             onClick={() => setView(VIEW_STATES.LANDING)}
           >
-            <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center group-hover:rotate-[-6deg] group-active:scale-90 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+            <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center group-hover:-rotate-6 group-active:scale-90 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
               <CheckCircle className="text-black w-5 h-5 stroke-[2.5]" />
             </div>
             <span className="text-xl font-bold tracking-tight text-white">
@@ -65,7 +65,7 @@ const App = () => {
           <div className="flex items-center space-x-8">
             <button
               onClick={() => setView(VIEW_STATES.LOGIN)}
-              className="text-sm font-medium text-zinc-400 hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[1px] after:bg-white hover:after:w-full after:transition-all"
+              className="text-sm font-medium text-zinc-400 hover:text-white transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-white hover:after:w-full after:transition-all"
             >
               Sign in
             </button>
@@ -111,7 +111,7 @@ const App = () => {
             </section>
 
             <section className="py-24 px-6 max-w-7xl mx-auto">
-              <div className="bg-gradient-to-br from-zinc-900/40 to-black border border-zinc-800/50 rounded-[3rem] p-10 lg:p-16 relative overflow-hidden group">
+              <div className="bg-linear-to-br from-zinc-900/40 to-black border border-zinc-800/50 rounded-[3rem] p-10 lg:p-16 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[80px] rounded-full group-hover:bg-white/10 transition-colors" />
                 <div className="max-w-2xl mb-16 relative z-10">
                   <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">
@@ -221,12 +221,12 @@ const AuthModal = ({ type, onClose, setView }: any) => {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/60 backdrop-blur-md z-100 flex items-center justify-center p-4"
     >
       <motion.div 
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-[#0c0c0e] p-10 rounded-[2rem] border border-zinc-800 shadow-2xl relative overflow-hidden"
+        className="w-full max-w-md bg-[#0c0c0e] p-10 rounded-4xl border border-zinc-800 shadow-2xl relative overflow-hidden"
       >
         <AnimatePresence>
           {error && (
@@ -379,7 +379,7 @@ const Footer = () => (
 );
 
 const FeatureCard = ({ icon, title, desc }: any) => (
-  <div className="p-10 border border-zinc-900 bg-zinc-900/10 rounded-[2rem] hover:bg-zinc-900/20 hover:border-zinc-700/50 hover:translate-y-[-4px] transition-all duration-300 group">
+  <div className="p-10 border border-zinc-900 bg-zinc-900/10 rounded-4xl hover:bg-zinc-900/20 hover:border-zinc-700/50 hover:-translate-y-1 transition-all duration-300 group">
     <div className="w-12 h-12 mb-8 text-zinc-500 group-hover:text-white group-hover:scale-110 transition-all duration-300">
       {icon}
     </div>
