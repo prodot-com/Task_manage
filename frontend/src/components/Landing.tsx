@@ -17,6 +17,8 @@ import {
   Github,
   Twitter,
   Linkedin,
+  AlertCircle,
+  Loader2
 } from "lucide-react";
 
 const VIEW_STATES = {
@@ -188,6 +190,8 @@ const AuthModal = ({ type, onClose, setView }: any) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const schema = isLogin ? loginSchema : registerSchema;
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -198,6 +202,8 @@ const AuthModal = ({ type, onClose, setView }: any) => {
   });
 
   const onSubmit = async (data: any) => {
+    setIsLoading(true);
+    setError(null);
     try {
       const endpoint = isLogin ? "/auth/login" : "/auth/register";
       const res = await api.post(endpoint, data);
@@ -205,7 +211,9 @@ const AuthModal = ({ type, onClose, setView }: any) => {
       onClose();
       navigate("/dashboard");
     } catch (err: any) {
-      alert(err.response?.data?.message || "Auth failed");
+      setError(err.response?.data?.message || "Authentication failed. Please check your credentials.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -218,8 +226,27 @@ const AuthModal = ({ type, onClose, setView }: any) => {
       <motion.div 
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-[#0c0c0e] p-10 rounded-[2rem] border border-zinc-800 shadow-2xl relative"
+        className="w-full max-w-md bg-[#0c0c0e] p-10 rounded-[2rem] border border-zinc-800 shadow-2xl relative overflow-hidden"
       >
+        <AnimatePresence>
+          {error && (
+            <motion.div 
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              className="absolute inset-x-0 top-0 bg-red-500/10 border-b border-red-500/20 p-4 flex items-center justify-between gap-3 z-10"
+            >
+              <div className="flex items-center gap-2">
+                <AlertCircle className="text-red-500 w-4 h-4" />
+                <p className="text-red-500 text-xs font-semibold">{error}</p>
+              </div>
+              <button onClick={() => setError(null)} className="text-red-500/50 hover:text-red-500">
+                <X size={14} />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <button 
           onClick={onClose} 
           className="absolute top-6 right-6 p-2 rounded-full hover:bg-zinc-900 text-zinc-500 hover:text-white transition-all"
@@ -227,7 +254,7 @@ const AuthModal = ({ type, onClose, setView }: any) => {
           <X size={20} />
         </button>
 
-        <div className="mb-10 text-center">
+        <div className="mb-10 text-center pt-4">
           <h2 className="text-3xl font-bold text-white mb-2">
             {isLogin ? "Welcome back" : "Create account"}
           </h2>
@@ -237,56 +264,51 @@ const AuthModal = ({ type, onClose, setView }: any) => {
         </div>
 
         <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-          {!isLogin && (
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 px-1">
-                Name
+                Username
               </label>
               <input
+                disabled={isLoading}
                 type="text"
                 placeholder="John Doe"
-                {...register("name")}
-                className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 rounded-xl outline-none transition-all placeholder:text-zinc-700 text-white"
+                {...register("userName")}
+                className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 rounded-xl outline-none transition-all placeholder:text-zinc-700 text-white disabled:opacity-50"
               />
-              {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name.message as string}</p>}
+              {errors.userName && <p className="text-red-400 text-xs mt-1">{errors.userName.message as string}</p>}
             </div>
-          )}
-
-          <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 px-1">Email</label>
-            <input
-              type="email"
-              placeholder="name@company.com"
-              {...register("email")}
-              className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 rounded-xl outline-none transition-all placeholder:text-zinc-700 text-white"
-            />
-            {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message as string}</p>}
-          </div>
 
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 px-1">Password</label>
             <input
+              disabled={isLoading}
               type="password"
               placeholder="••••••••"
               {...register("password")}
-              className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 rounded-xl outline-none transition-all placeholder:text-zinc-700 text-white"
+              className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 rounded-xl outline-none transition-all placeholder:text-zinc-700 text-white disabled:opacity-50"
             />
             {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message as string}</p>}
           </div>
 
           <button
+            disabled={isLoading}
             type="submit"
-            className="w-full py-4 bg-white hover:bg-zinc-200 text-black font-bold rounded-xl transition-all mt-4 active:scale-95 shadow-lg shadow-white/5"
+            className="w-full py-4 bg-white hover:bg-zinc-200 text-black font-bold rounded-xl transition-all mt-4 active:scale-95 shadow-lg shadow-white/5 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {isLogin ? "Sign In" : "Get Started"}
+            {isLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              isLogin ? "Sign In" : "Get Started"
+            )}
           </button>
         </form>
 
         <p className="text-center text-sm mt-8 text-zinc-500">
           {isLogin ? "No account?" : "Already have an account?"}
           <button
+            disabled={isLoading}
             onClick={() => setView(isLogin ? VIEW_STATES.REGISTER : VIEW_STATES.LOGIN)}
-            className="ml-2 text-white font-bold hover:underline"
+            className="ml-2 text-white font-bold hover:underline disabled:opacity-50"
           >
             {isLogin ? "Sign up free" : "Log in"}
           </button>
