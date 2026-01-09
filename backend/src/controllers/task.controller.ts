@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../prisma.js";
 
-
 interface AuthRequest extends Request {
   user?: {
     userId: number;
@@ -77,7 +76,6 @@ export const deleteTask = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.user!.userId;
-
 
     const task = await prisma.task.findUnique({
       where: { id: Number(id) },
